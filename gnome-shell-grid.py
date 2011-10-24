@@ -11,7 +11,6 @@ PANEL_HEIGHT = 26
 
 def close(a, b):
     v = sum((x-y)**2 for (x, y) in zip(a, b))
-    print v
     return v < 200
 
 def cycle(func):
@@ -80,18 +79,26 @@ def reset(display, win):
                [0, atom("_NET_WM_STATE_MAXIMIZED_VERT"),
                 atom("_NET_WM_STATE_MAXIMIZED_HORZ")])
     display.flush()
-    
-MODIFIER_MASK = X.Mod1Mask | X.ControlMask | X.ShiftMask # Ctrl-Alt
 
+KEY_MODIFIER_MASK = X.Mod1Mask | X.ControlMask | X.ShiftMask # Ctrl-Alt-Shift
+PAD_MODIFIER_MASK = X.Mod1Mask | X.ControlMask # Ctrl-Alt
 KEYMAP = {
     XK.XK_k: top,
+    XK.XK_KP_8: top,
     XK.XK_i: top_right,
+    XK.XK_KP_9: top_right,
     XK.XK_l: right,
+    XK.XK_KP_6: right,
     XK.XK_m: bottom_right,
+    XK.XK_KP_3: bottom_right,
     XK.XK_j: bottom,
+    XK.XK_KP_2: bottom,
     XK.XK_n: bottom_left,
+    XK.XK_KP_1: bottom_left,
     XK.XK_h: left,
+    XK.XK_KP_4: left,
     XK.XK_u: top_left,
+    XK.XK_KP_7: top_left,
     }
 
 def run_idle():
@@ -107,7 +114,11 @@ def main():
                                  screen.get_height() - PANEL_HEIGHT)
 
     for keysym in KEYMAP:
-        root.grab_key(display.keysym_to_keycode(keysym), MODIFIER_MASK, True,
+        if keysym < XK.XK_KP_1:
+            modifier_mask = KEY_MODIFIER_MASK
+        else:
+            modifier_mask = PAD_MODIFIER_MASK
+        root.grab_key(display.keysym_to_keycode(keysym), modifier_mask, True,
                       X.GrabModeAsync, X.GrabModeAsync)
     while True:
         event = root.display.next_event()
@@ -115,7 +126,14 @@ def main():
         if event.type == X.KeyRelease:
             run_idle()
             w = screen.get_active_window()
-            func = KEYMAP[display.keycode_to_keysym(event.detail, 0)]
+            for i in range(4):
+                try:
+                    func = KEYMAP[display.keycode_to_keysym(event.detail, i)]
+                    break
+                except KeyError:
+                    continue
+            else:
+                raise
             x, y, width, height = w.get_geometry()
             y -= PANEL_HEIGHT
             g = func((root_width, root_height), (x, y, width, height))
