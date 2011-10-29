@@ -125,6 +125,8 @@ def main():
         run_idle()
         if event.type == X.KeyRelease:
             run_idle()
+            (root_width, root_height) = (screen.get_width(),
+                                         screen.get_height() - PANEL_HEIGHT)
             w = screen.get_active_window()
             for i in range(4):
                 try:
