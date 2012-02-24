@@ -21,7 +21,9 @@ def cycle(func):
                 break
         return possible_positions[(i + 1) % len(possible_positions)]
     return wrapper
-    
+
+def full((width, height), window_size):
+    return 0, 0, width, height    
 
 def top((width, height), window_size):
     return 0, 0, width, height / 2
@@ -83,6 +85,7 @@ def reset(display, win):
 KEY_MODIFIER_MASK = X.Mod1Mask | X.ControlMask | X.ShiftMask # Ctrl-Alt-Shift
 PAD_MODIFIER_MASK = X.Mod1Mask | X.ControlMask # Ctrl-Alt
 KEYMAP = {
+    XK.XK_KP_5: full,
     XK.XK_k: top,
     XK.XK_KP_8: top,
     XK.XK_i: top_right,
