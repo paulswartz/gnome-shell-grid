@@ -16,16 +16,27 @@ While I like many of the new features in [GNOME Shell](http://live.gnome.org/Gno
 How to Use
 ----------
 
-     git clone git://github.com/paulswartz/gnome-shell-grid.git
+### Prerequisites ###
+#### Debian/Ubuntu #####
+
      sudo apt-get install python-xlib python-wnck
+
+#### Fedora/Red Hat ####
+
+     sudo yum install gnome-python2-libwnck python-xlib
+
+#### gnome-shell-grid ####
+     git clone git://github.com/paulswartz/gnome-shell-grid.git
+
+### Running the daemon ###
      python gnome-shell-grid/gnome-shell-grid.py
-     
+
 License
 -------
 
 gnome-shell-grid is released under the GPLv3.  You can read the license in the
 `LICENSE.txt` file.
-     
+
 Author
 ------
 
@@ -36,3 +47,4 @@ I'm [Paul Swartz](http://paulswartz.net).  You can find me on Twitter
 Additional contributions from:
 
 * Josh England
+* Robert R. Meyer
