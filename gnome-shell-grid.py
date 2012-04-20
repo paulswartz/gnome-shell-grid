@@ -81,6 +81,12 @@ def top_left((width, height)):
     return [(0, 0, cycle, height)
             for cycle in width_cycle]
 
+def check_num_lock(*args):
+    display = Xlib.display.Display()
+    gkc = display.get_keyboard_control()
+    if gkc.led_mask & 2 == 2:
+        print 'WARNING: NumLock is on; your bindings may not work.'
+
 # send_event and reset are from PyTyle
 def send_event(root, win, ctype, data, mask=None):
     data = (data + ([0] * (5 - len(data))))[:5]
@@ -118,6 +124,7 @@ KEYMAP = {
     XK.XK_KP_4: left,
     XK.XK_u: top_left,
     XK.XK_KP_7: top_left,
+    XK.XK_Num_Lock: check_num_lock,
     }
 
 def run_idle():
@@ -127,18 +134,23 @@ def run_idle():
 def main():
     display = Xlib.display.Display()
     root = display.screen().root
+    root.change_attributes(event_mask = X.KeyReleaseMask)
     screen = wnck.screen_get_default()
     screen.force_update()
     (root_width, root_height) = (screen.get_width(),
                                  screen.get_height() - PANEL_HEIGHT)
 
     for keysym in KEYMAP:
-        if keysym < XK.XK_KP_1:
+        if keysym == XK.XK_Num_Lock:
+            modifier_mask = 0
+        elif keysym < XK.XK_KP_1:
             modifier_mask = KEY_MODIFIER_MASK
         else:
             modifier_mask = PAD_MODIFIER_MASK
         root.grab_key(display.keysym_to_keycode(keysym), modifier_mask, True,
                       X.GrabModeAsync, X.GrabModeAsync)
+
+    check_num_lock()
     while True:
         event = root.display.next_event()
         run_idle()
@@ -158,8 +170,9 @@ def main():
             x, y, width, height = w.get_geometry()
             y -= PANEL_HEIGHT
             g = func(w, (root_width, root_height), (x, y, width, height))
-            print w.get_name(), (x, y, width, height), g
-            w.set_geometry(0, 15, g[0], g[1], g[2], g[3])
+            if g is not None:
+                print w.get_name(), (x, y, width, height), g
+                w.set_geometry(0, 15, g[0], g[1], g[2], g[3])
             run_idle()
 
 
