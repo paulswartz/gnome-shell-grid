@@ -9,12 +9,19 @@ import wnck
 
 PANEL_HEIGHT = 26
 
+def unmaximize(func):
+    def wrapper(w, *args):
+        if w.is_maximized():
+            w.unmaximize()
+        return func(*args)
+    return wrapper
+
 def close(a, b):
     v = sum((x-y)**2 for (x, y) in zip(a, b))
     return v < 200
 
 def cycle(func):
-    def wrapper((width, height), window_size):
+    def wrapper(w, (width, height), window_size):
         possible_positions = func((width, height))
         for i, pos in enumerate(possible_positions):
             if close(pos, window_size):
@@ -22,43 +29,52 @@ def cycle(func):
         return possible_positions[(i + 1) % len(possible_positions)]
     return wrapper
 
-def full((width, height), window_size):
-    return 0, 0, width, height    
+def full(w, (width, height), window_size):
+    w.maximize()
+    return 0, 0, width, height
 
+@unmaximize
 def top((width, height), window_size):
     return 0, 0, width, height / 2
 
 @cycle
+@unmaximize
 def top_right((width, height)):
     height = height / 2
     width_cycle = [width / 2, int(width / 1.5), width / 3]
     return [(width-cycle, 0, cycle, height)
             for cycle in width_cycle]
 
+@unmaximize
 def right((width, height), window_size):
     return width / 2, 0, width / 2, height
 
 @cycle
+@unmaximize
 def bottom_right((width, height)):
     height = height / 2
     width_cycle = [width / 2, int(width / 1.5), width / 3]
     return [(width-cycle, height, cycle, height)
             for cycle in width_cycle]
 
+@unmaximize
 def bottom((width, height), window_size):
     return 0, height / 2, width, height / 2
 
 @cycle
+@unmaximize
 def bottom_left((width, height)):
     height = height / 2
     width_cycle = [width / 2, int(width / 1.5), width / 3]
     return [(0, height, cycle, height)
             for cycle in width_cycle]
 
+@unmaximize
 def left((width, height), window_size):
     return 0, 0, width / 2, height
 
 @cycle
+@unmaximize
 def top_left((width, height)):
     height = height / 2
     width_cycle = [width / 2, int(width / 1.5), width / 3]
@@ -107,7 +123,7 @@ KEYMAP = {
 def run_idle():
     while gtk.events_pending():
         gtk.main_iteration()
-    
+
 def main():
     display = Xlib.display.Display()
     root = display.screen().root
@@ -141,7 +157,7 @@ def main():
                 raise
             x, y, width, height = w.get_geometry()
             y -= PANEL_HEIGHT
-            g = func((root_width, root_height), (x, y, width, height))
+            g = func(w, (root_width, root_height), (x, y, width, height))
             print w.get_name(), (x, y, width, height), g
             w.set_geometry(0, 15, g[0], g[1], g[2], g[3])
             run_idle()
